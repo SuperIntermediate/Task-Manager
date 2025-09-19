@@ -21,9 +21,12 @@ export default function App() {
     }
   }, [darkMode]);
 
+  // 🌍 Use your Render backend URL
+  const API_BASE = "https://task-manager-2p9f.onrender.com/tasks";
+
   // ✅ Fetch tasks from backend (MongoDB Atlas via Express)
   useEffect(() => {
-    fetch("http://localhost:5000/tasks")
+    fetch(API_BASE)
       .then((res) => res.json())
       .then((data) => setTasks(data))
       .catch((err) => console.error("Error fetching tasks:", err));
@@ -34,7 +37,7 @@ export default function App() {
     const newTask = { title, description, completed: false };
 
     try {
-      const res = await fetch("http://localhost:5000/tasks", {
+      const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask),
@@ -49,7 +52,7 @@ export default function App() {
   // ✅ Update task (PUT to backend)
   const updateTask = async (id, updatedFields) => {
     try {
-      const res = await fetch(`http://localhost:5000/tasks/${id}`, {
+      const res = await fetch(`${API_BASE}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFields),
@@ -64,7 +67,7 @@ export default function App() {
   // ✅ Delete task (DELETE from backend)
   const deleteTask = async (id) => {
     try {
-      await fetch(`http://localhost:5000/tasks/${id}`, { method: "DELETE" });
+      await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
       setTasks((prev) => prev.filter((task) => task._id !== id));
     } catch (err) {
       console.error("Error deleting task:", err);
