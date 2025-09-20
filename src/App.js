@@ -32,9 +32,6 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // 🌍 Use your Render backend URL
-  const API_BASE = "https://task-manager-2p9f.onrender.com/tasks";
-
   // ✅ Add task (local only)
   const addTask = (title, description, dueDate) => {
     const newTask = {
@@ -45,29 +42,6 @@ export default function App() {
       completed: false,
     };
     setTasks((prev) => [...prev, newTask]);
-  // ✅ Fetch tasks from backend (MongoDB Atlas via Express)
-  useEffect(() => {
-    fetch(API_BASE)
-      .then((res) => res.json())
-      .then((data) => setTasks(data))
-      .catch((err) => console.error("Error fetching tasks:", err));
-  }, []);
-
-  // ✅ Add task (POST to backend)
-  const addTask = async (title, description) => {
-    const newTask = { title, description, completed: false };
-
-    try {
-      const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTask),
-      });
-      const data = await res.json();
-      setTasks((prev) => [...prev, data]); // update frontend state
-    } catch (err) {
-      console.error("Error adding task:", err);
-    }
   };
 
   // ✅ Update task
@@ -77,32 +51,11 @@ export default function App() {
         task.id === id ? { ...task, ...updatedFields } : task
       )
     );
-  // ✅ Update task (PUT to backend)
-  const updateTask = async (id, updatedFields) => {
-    try {
-      const res = await fetch(`${API_BASE}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedFields),
-      });
-      const data = await res.json();
-      setTasks((prev) => prev.map((task) => (task._id === id ? data : task)));
-    } catch (err) {
-      console.error("Error updating task:", err);
-    }
   };
 
   // ✅ Delete task
   const deleteTask = (id) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
-  // ✅ Delete task (DELETE from backend)
-  const deleteTask = async (id) => {
-    try {
-      await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-      setTasks((prev) => prev.filter((task) => task._id !== id));
-    } catch (err) {
-      console.error("Error deleting task:", err);
-    }
   };
 
   return (
