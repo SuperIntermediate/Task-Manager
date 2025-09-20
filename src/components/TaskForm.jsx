@@ -3,13 +3,16 @@ import React, { useState } from "react";
 export default function TaskForm({ addTask }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (title.trim() === "" || description.trim() === "") return;
-    addTask(title, description);
+
+    addTask(title, description, dueDate);
     setTitle("");
     setDescription("");
+    setDueDate("");
   };
 
   return (
@@ -30,6 +33,12 @@ export default function TaskForm({ addTask }) {
         placeholder="Task Description"
         rows="3"
         className="w-full px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-400 outline-none resize-none"
+      />
+      <input
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+        className="w-full px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-400 outline-none"
       />
       <button
         type="submit"

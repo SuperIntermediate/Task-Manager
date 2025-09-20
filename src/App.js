@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion"; // ✅ Import animation library
+import { motion } from "framer-motion"; 
 import TaskList from "./components/TaskList";
 import Header from "./components/Header";
 import TaskForm from "./components/TaskForm";
@@ -9,6 +9,17 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("theme") === "dark"
   );
+
+  // ✅ Load tasks from localStorage when app starts
+  useEffect(() => {
+    const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    setTasks(storedTasks);
+  }, []);
+
+  // ✅ Save tasks to localStorage whenever tasks update
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   // ✅ Dark mode effect
   useEffect(() => {
@@ -24,6 +35,16 @@ export default function App() {
   // 🌍 Use your Render backend URL
   const API_BASE = "https://task-manager-2p9f.onrender.com/tasks";
 
+  // ✅ Add task (local only)
+  const addTask = (title, description, dueDate) => {
+    const newTask = {
+      id: Date.now().toString(),
+      title,
+      description,
+      dueDate,
+      completed: false,
+    };
+    setTasks((prev) => [...prev, newTask]);
   // ✅ Fetch tasks from backend (MongoDB Atlas via Express)
   useEffect(() => {
     fetch(API_BASE)
@@ -49,6 +70,13 @@ export default function App() {
     }
   };
 
+  // ✅ Update task
+  const updateTask = (id, updatedFields) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, ...updatedFields } : task
+      )
+    );
   // ✅ Update task (PUT to backend)
   const updateTask = async (id, updatedFields) => {
     try {
@@ -64,6 +92,9 @@ export default function App() {
     }
   };
 
+  // ✅ Delete task
+  const deleteTask = (id) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
   // ✅ Delete task (DELETE from backend)
   const deleteTask = async (id) => {
     try {
@@ -79,8 +110,8 @@ export default function App() {
       className="relative min-h-screen flex justify-center items-center p-6 transition-colors duration-500 scroll-smooth"
       style={{
         backgroundImage: darkMode
-          ? "url('https://images.unsplash.com/photo-1696384036025-c7d7b7f6584d?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0')" // Dark theme
-          : "url('https://images.unsplash.com/photo-1719774552051-c190e5c74fc3?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0')", // Light theme
+          ? "url('https://images.unsplash.com/photo-1696384036025-c7d7b7f6584d?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0')" 
+          : "url('https://images.unsplash.com/photo-1719774552051-c190e5c74fc3?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0')", 
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
