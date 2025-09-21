@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion"; 
+import { motion } from "framer-motion";
 import TaskList from "./components/TaskList";
 import Header from "./components/Header";
 import TaskForm from "./components/TaskForm";
+import Auth from "./components/Auth"; // 🔑 New Auth component
 
 export default function App() {
-  const [tasks, setTasks] = useState([]);
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
+  const [currentUser, setCurrentUser] = useState(localStorage.getItem("currentUser"));
 
-  // ✅ Load tasks from localStorage when app starts
-  useEffect(() => {
-    const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    setTasks(storedTasks);
-  }, []);
+  // ✅ Initialize tasks directly from localStorage (prevents reset on refresh)
+  const [tasks, setTasks] = useState(() => {
+    const savedUser = localStorage.getItem("currentUser");
+    if (savedUser) {
+      return JSON.parse(localStorage.getItem(`tasks_${savedUser}`)) || [];
+    }
+    return [];
+  });
 
-  // ✅ Save tasks to localStorage whenever tasks update
+  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
+
+  // ✅ Update tasks when user changes
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    if (currentUser) {
+      const storedTasks = JSON.parse(localStorage.getItem(`tasks_${currentUser}`)) || [];
+      setTasks(storedTasks);
+    } else {
+      setTasks([]); // clear tasks if no user
+    }
+  }, [currentUser]);
+
+  // ✅ Save tasks only for the logged-in user
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem(`tasks_${currentUser}`, JSON.stringify(tasks));
+    }
+  }, [tasks, currentUser]);
 
   // ✅ Dark mode effect
   useEffect(() => {
@@ -32,7 +47,7 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // ✅ Add task (local only)
+  // ✅ Add task
   const addTask = (title, description, dueDate) => {
     const newTask = {
       id: Date.now().toString(),
@@ -58,18 +73,30 @@ export default function App() {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
+  // ✅ Logout
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    setCurrentUser(null);
+    setTasks([]); // clear tasks on logout
+  };
+
+  // If no user is logged in → show Auth screen
+  if (!currentUser) {
+    return <Auth setCurrentUser={setCurrentUser} />;
+  }
+
   return (
     <div
       className="relative min-h-screen flex justify-center items-center p-6 transition-colors duration-500 scroll-smooth"
       style={{
         backgroundImage: darkMode
-          ? "url('https://images.unsplash.com/photo-1696384036025-c7d7b7f6584d?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0')" 
-          : "url('https://images.unsplash.com/photo-1719774552051-c190e5c74fc3?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0')", 
+          ? "url('https://images.unsplash.com/photo-1696384036025-c7d7b7f6584d?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0')"
+          : "url('https://images.unsplash.com/photo-1719774552051-c190e5c74fc3?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      {/* 🔹 Floating background blobs for next-gen UI */}
+      {/* Floating background blobs */}
       <motion.div
         className="absolute top-20 left-10 w-40 h-40 bg-indigo-400 rounded-full opacity-30 blur-3xl"
         animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
@@ -93,7 +120,17 @@ export default function App() {
           backgroundColor: darkMode ? "#5D6C8C" : "#E8B7B4",
         }}
       >
-        <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+        {/* Header with logout */}
+        <div className="flex justify-between items-center mb-4">
+          <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1 bg-red-500 text-white rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
+
         <TaskForm addTask={addTask} />
         <TaskList
           tasks={tasks}
