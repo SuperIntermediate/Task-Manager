@@ -6,18 +6,18 @@ import TaskForm from "./components/TaskForm";
 import Auth from "./components/Auth"; // 🔑 New Auth component
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState(localStorage.getItem("currentUser"));
+  // 🔹 Always start with null → user must log in every time
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // ✅ Initialize tasks directly from localStorage (prevents reset on refresh)
-  const [tasks, setTasks] = useState(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser) {
-      return JSON.parse(localStorage.getItem(`tasks_${savedUser}`)) || [];
-    }
-    return [];
-  });
+  // ✅ Initialize tasks empty first
+  const [tasks, setTasks] = useState([]);
 
   const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
+
+  // 🔹 Clear saved user on app load → force login every time
+  useEffect(() => {
+    localStorage.removeItem("currentUser");
+  }, []);
 
   // ✅ Update tasks when user changes
   useEffect(() => {
